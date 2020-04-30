@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>热图</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/CesiumUnminified/Cesium.js"></script>
+
+		<style type="text/css">
+			#heatmap {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="mapContainer" style="height: 100%;width: 100%;"></div>
+		<div id="heatmap"></div>
+		<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../../js/mock-min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="heatmap.js" type="text/javascript" charset="utf-8"></script>
+		<script src="heat4.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript">
+			function test() {
+
+				//单位:s
+				let time = 30;
+
+				/* let mockData = Mock.mock({
+					'array|1-100': [{
+						"name": function() {
+							return Mock.Random.guid()
+						},
+						"lon|116.5": 1,
+						"lat|39.5": 1,
+						"radius|1-10": 10
+					}]
+				}); */
+
+				$.get("heatBj.json", function(data) {
+
+					let mockData = Mock.mock({
+						'array|1000-3000': [{
+							"lon|115-117.5": 1,
+							"lat|39-40.5": 1,
+							"value": 1
+						}]
+					});
+
+					data = mockData.array;
+
+					let latMin = Math.min.apply(
+						Math,
+						data.map(function(o) {
+							return o.lat;
+						})
+					);
+					let latMax = Math.max.apply(
+						Math,
+						data.map(function(o) {
+							return o.lat;
+						})
+					);
+					let lonMin = Math.min.apply(
+						Math,
+						data.map(function(o) {
+							return o.lon;
+						})
+					);
+					let lonMax = Math.max.apply(
+						Math,
+						data.map(function(o) {
+							return o.lon;
+						})
+					);
+					let density = 1500;
+					let width = (lonMax - lonMin) * density;
+					let height = (latMax - latMin) * density;
+
+					$('#heatmap').css({
+						width: width,
+						height: height
+					});
+
+					heat.heatMap(data, density, density);
+					// heat.heatMapCall(data, density, density);
+				});
+
+				let handler = new Cesium.ScreenSpaceEventHandler(
+					viewer.scene.canvas
+				);
+
+				// viewer.flyTo(viewer.entities)
+
+				setInterval(refresh, 2000);
+			}
+
+			let key = 10;
+
+			function refresh() {
+				let minLat = 39.4868;
+				let maxLat = 40.758975;
+				let minLon = 115.56164;
+				let maxLon = 117.29967;
+
+				let mockData = Mock.mock({
+					'array|100-1000': [{
+						"lon|115-117.5": 1,
+						"lat|39-40.5": 1,
+						"value": 1
+					}]
+				});
+
+				heat.refreshData(mockData.array)
+			}
+
+			setTimeout(test, 2000)
+		</script>
+	</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>门头沟区边界线和乡镇</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/Cesium/Cesium.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<div id="mapContainer"> </div>
+		<<div>
+			</div>
+	</body>
+	<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		function test() {
+
+			viewer.scene.maximumAliasedLineWidth = 20;
+			let see = {
+				destination: {
+					x: -2966251.3746234304,
+					y: 14973357.97039976,
+					z: 5604000.505236851
+				},
+				orientation: {
+					heading: 6.28318530717957,
+					pitch: -1.3544041792529433,
+					roll: 6.283185307179583
+				}
+			}
+
+			viewer.scene.camera.flyTo(see)
+			let loadPromise = viewer.dataSources.add(Cesium.GeoJsonDataSource.load('1109-geojson-bound.json', {
+				stroke: Cesium.Color.HOTPINK,
+				fill: Cesium.Color.TRANSPARENT,
+				strokeWidth: 3
+			}));
+
+			let loadPromise2 = viewer.dataSources.add(Cesium.CzmlDataSource.load('门头沟区-czml-polygons.json', {
+				stroke: Cesium.Color.fromRandom({
+					alpha: 1
+				}),
+				fill: Cesium.Color.TRANSPARENT,
+				strokeWidth: 6
+			}));
+
+
+			//'门头沟边界.json'
+			let loadPromise3 = Cesium.GeoJsonDataSource.load('门头沟边界线.json', {
+				stroke: Cesium.Color.WHITE,
+				fill: Cesium.Color.TRANSPARENT,
+				strokeWidth: 3
+			})
+
+			loadPromise3.then(dataSource => {
+
+				viewer.dataSources.add(dataSource);
+				console.log('go');
+				/* viewer.flyTo(dataSource, {
+					duration: 1000
+				}) */
+
+				setTimeout(() => {
+					viewer.flyTo(dataSource, {
+						//单位是秒,1000会卡死相机
+						duration: 3
+					})
+				})
+			}, 2000);
+		}
+
+		setTimeout(test, 1000)
+	</script>
+</html>

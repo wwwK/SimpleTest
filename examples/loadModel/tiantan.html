@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>天坛模型太小了</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/Cesium/Cesium.js"></script>
+	</head>
+	<body>
+		<div id="mapContainer" style="height: 100%;width: 100%;"></div>
+		<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			let lastEntity = null;
+
+			function test() {
+
+				//开启抗锯齿
+				viewer.scene.postProcessStages.fxaa.enabled = true;
+
+				let model = createModel('./model/tiantan.gltf', 20);
+
+				let scene = viewer.scene;
+
+				let handler = new Cesium.ScreenSpaceEventHandler(
+					viewer.scene.canvas
+				);
+
+				var entity = viewer.entities.add({
+					label: {
+						show: false,
+						showBackground: true,
+						font: '14px monospace',
+						horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+						verticalOrigin: Cesium.VerticalOrigin.TOP,
+						pixelOffset: new Cesium.Cartesian2(15, 0)
+					}
+				});
+
+				handler.setInputAction(function(movement) {
+					var cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid);
+					if (cartesian) {
+						var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+						var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(6);
+						var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(6);
+
+						entity.position = cartesian;
+						entity.label.show = true;
+						entity.label.text =
+							'Lon: ' + ('   ' + longitudeString).slice(-7) + '\u00B0' +
+							'\nLat: ' + ('   ' + latitudeString).slice(-7) + '\u00B0';
+					} else {
+						entity.label.show = false;
+					}
+				}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+				handler.setInputAction(
+					event,
+					Cesium.ScreenSpaceEventType.LEFT_CLICK
+				);
+
+			}
+
+			function createModel(url, height) {
+
+				var position = Cesium.Cartesian3.fromDegrees(116.39059, 39.991375, height);
+				// var hpr = new Cesium.HeadingPitchRoll(-0.013, 0.0, 0.0);
+				var hpr = new Cesium.HeadingPitchRoll(0, 0.0, 0.0);
+				var orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
+
+				var entity = viewer.entities.add({
+					name: 'gugong',
+					position: position,
+					orientation: orientation,
+					model: {
+						uri: url,
+						// scale: 0.00096,
+						scale: 0.000244,
+						// heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+						minimumPixelSize: 32,
+						maximumScale: 128,
+						// colorBlendMode: Cesium.ColorBlendMode['HIGHLIGHT'],
+						disableDepthTestDistance: Number.POSITIVE_INFINITY
+						// distanceDisplayCondition: new Cesium.DistanceDisplayCondition(50, 50000)
+					},
+
+				});
+
+				viewer.flyTo(entity, {
+					//单位是秒,1000会卡死相机
+					duration: 3
+				})
+			}
+
+			setTimeout(test, 1000)
+		</script>
+	</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>多边形叠加</title>
+		<link rel="stylesheet" type="text/css" href="/SimpleTest/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="/SimpleTest/css/index.css" />
+		<link rel="stylesheet" type="text/css" href="/SimpleTest/js/layui-v2.5.4/css/layui.css" />
+		<script src="/SimpleTest/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/SimpleTest/js/Cesium/Cesium.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/SimpleTest/utils/init.js" type="text/javascript" charset="utf-8"></script>
+		<script src="/SimpleTest/utils/event.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<div id="mapContainer"> </div>
+	</body>
+	<script type="text/javascript">
+		function test() {
+
+			let geoOption = {
+				stroke: Cesium.Color.HOTPINK,
+				fill: Cesium.Color.TRANSPARENT,
+				strokeWidth: 1
+			}
+
+			let loadPromise1 = Cesium.GeoJsonDataSource.load('450M_new_1.json', {});
+
+			/* let loadPromise2 = viewer.dataSources.add(Cesium.GeoJsonDataSource.load('450M_new_2.json', {}));
+
+			let loadPromise3 = viewer.dataSources.add(Cesium.GeoJsonDataSource.load('450M_new_3.json', {}));
+
+			let loadPromise4 = viewer.dataSources.add(Cesium.GeoJsonDataSource.load('450M_new_4.json', {}));
+
+			let loadPromise5 = viewer.dataSources.add(Cesium.GeoJsonDataSource.load('450M_new_5.json', {}));
+ */
+			Promise.all([loadPromise1]).then(dsArr => {
+
+				dsArr.forEach(ds => {
+					viewer.dataSources.add(ds);
+					
+					addMoveListener();
+				});
+
+			});
+		}
+
+		done().then(test);
+	</script>
+</html>

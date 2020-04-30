@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>热图</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/CesiumUnminified/Cesium.js"></script>
+
+		<style type="text/css">
+			#heatmap {
+				display: none;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="mapContainer" style="height: 100%;width: 100%;"></div>
+		<div id="heatmap"></div>
+		<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../../js/mock-min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="heatmap.js" type="text/javascript" charset="utf-8"></script>
+		<script src="heat.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript">
+			let entity;
+
+			function test() {
+
+				let pos = {
+					minLon: 115.55938774774775,
+					maxLon: 117.30192225225225,
+					minLat: 39.484547747747747,
+					maxLat: 40.761227252252255
+				};
+
+				entity = viewer.entities.add({
+					rectangle: {
+						coordinates: Cesium.Rectangle.fromDegrees(
+							pos.minLon,
+							pos.minLat,
+							pos.maxLon,
+							pos.maxLat
+						),
+						material: new Cesium.ImageMaterialProperty({
+							image: 'test.png',
+							transparent: true,
+							color: Cesium.Color.WHITE.withAlpha(0.5)
+						})
+					}
+				});
+
+
+				let handler = new Cesium.ScreenSpaceEventHandler(
+					viewer.scene.canvas
+				);
+
+				// viewer.flyTo(viewer.entities)
+
+				setInterval(refresh, 2000);
+			}
+
+			let key = 10;
+
+			function refresh() {
+				//闪
+				// entity.rectangle.material.image = "test.png";
+				entity.rectangle.material.image = new Cesium.CallbackProperty(function() {
+					return "test.png";
+				}, false);
+			}
+
+			setTimeout(test, 2000)
+		</script>
+	</body>
+</html>

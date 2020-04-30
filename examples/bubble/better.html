@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>气泡图Shader实现</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/Cesium/Cesium.js"></script>
+	</head>
+	<body>
+		<div id="mapContainer" style="height: 100%;width: 100%;"></div>
+		<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../../js/mock-min.js" type="text/javascript" charset="utf-8"></script>
+
+		<script>
+			import Material from '../../extend/Material.js';
+		</script>
+
+		<script type="text/javascript">
+			function test() {
+
+				//单位:s
+				let time = 30;
+
+				let mockData = Mock.mock({
+					'array|1-100': [{
+						"name": function() {
+							return Mock.Random.guid()
+						},
+						"lon|116.5": 1,
+						"lat|39.5": 1,
+						"radius|1-10": 10
+					}]
+				});
+
+				let bubbleEntities = {};
+
+				for (let i = 0; i < mockData.array.length; i++) {
+					let data = mockData.array[i];
+					let sampleProperty = new Cesium.SampledProperty(Number);
+					let tick = viewer.clock.currentTime;;
+					sampleProperty.addSample(tick, 0);
+					sampleProperty.addSample(Cesium.JulianDate.addSeconds(tick, time, new Cesium.JulianDate()), data.radius * 1000);
+
+					let entity = viewer.entities.add({
+						id: data.name,
+						position: Cesium.Cartesian3.fromDegrees(data.lon, data.lat),
+						ellipse: {
+							semiMajorAxis: sampleProperty,
+							semiMinorAxis: sampleProperty,
+							outline: true,
+							outlineColor: Cesium.Color.RED.withAlpha(0.1),
+							outlineWidth: 1,
+							material: new Cesium.ElliposidFadeMaterialProperty({
+								color: Cesium.Color.RED.withAlpha(0.05)
+							})
+						}
+					});
+				}
+
+
+				let handler = new Cesium.ScreenSpaceEventHandler(
+					viewer.scene.canvas
+				);
+
+				viewer.flyTo(viewer.entities)
+			}
+
+
+			setTimeout(test, 1000)
+		</script>
+	</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8">
+		<title>贾冲测试专用</title>
+		<link rel="shortcut icon" href="favicon.ico">
+		<link rel="stylesheet/less" type="text/css" href="./less/index.less" />
+		<link rel="stylesheet" type="text/css" href="./js/layui-v2.5.4/css/layui.css" />
+		<script src="./js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="./js/less.min.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body class="layui-layout-body">
+		<div class="layui-layout layui-layout-admin">
+			<div class="layui-header jcHeader">
+				<img src="./img/logo.png" alt="logo" class="logo">
+				<span class="title">测试工具箱</span>
+			</div>
+			<div class="layui-side jcSider">
+				<div class="layui-side-scroll">
+					<ul class="layui-nav layui-nav-tree jcTree" lay-filter="tt">
+						<!-- 默认展开 layui-nav-itemd -->
+						<li class="layui-nav-item layui-nav-itemd">
+							<a href="javascript:;">基础</a>
+							<dl class="layui-nav-child">
+								<dd><a href="javascript:;">实体</a></dd>
+								<dd><a href="javascript:;">几何</a></dd>
+								<dd><a href="javascript:;">CZML</a></dd>
+								<dd><a href="">跳转</a></dd>
+							</dl>
+						</li>
+						<li class="layui-nav-item">
+							<a href="javascript:;">点</a>
+							<dl class="layui-nav-child">
+								<dd><a href="examples/bubble/interval.html"></a></dd>
+								<dd><a href="examples/geoJson/coverPolygon/index.html" target="frm_body">222</a></dd>
+								<dd><a href="javascript:;">333</a></dd>
+								<dd><a href="">444</a></dd>
+							</dl>
+						</li>
+						<li class="layui-nav-item"><a href="">其他</a></li>
+						<li class="layui-nav-item"><a href="javascript:;">测试</a></li>
+
+					</ul>
+				</div>
+			</div>
+			<div class="layui-body">
+				<iframe name="frm_body" frameborder="0" scrolling="no"></iframe>
+			</div>
+			<div class="layui-footer jcFooter">
+
+			</div>
+		</div>
+	</body>
+	<script src="./js/layui-v2.5.4/layui.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		//注意，导航依赖element模块，否则无法进行功能性操作，比如鼠标滑过没有动画等
+		layui.use('element', function() {
+			var element = layui.element;
+			element.init();
+		});
+	</script>
+</html>

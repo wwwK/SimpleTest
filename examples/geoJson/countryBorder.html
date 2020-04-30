@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>国家边界线</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/Cesium/Cesium.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<div id="mapContainer"> </div>
+	</body>
+	<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		function test() {
+
+			viewer.scene.maximumAliasedLineWidth = 20;
+			let see = {
+				destination: {
+					x: -2966251.3746234304,
+					y: 14973357.97039976,
+					z: 5604000.505236851
+				},
+				orientation: {
+					heading: 6.28318530717957,
+					pitch: -1.3544041792529433,
+					roll: 6.283185307179583
+				}
+			}
+
+			viewer.scene.camera.flyTo(see)
+
+			console.log('loadStart', new Date())
+			/* let loadPromise = viewer.dataSources.add(Cesium.GeoJsonDataSource.load('china.json', {
+				stroke: Cesium.Color.HOTPINK,
+				strokeWidth: 10
+			})).then(() => {
+				viewer.dataSources.add(Cesium.GeoJsonDataSource.load('nine-line.json', {
+					stroke: Cesium.Color.HOTPINK,
+					strokeWidth: 10
+				}));
+			}); */
+
+			/* $.get('china.json', function(result) {
+				let cods = result.features[0].geometry.coordinates;
+				var geometrys = [];
+				cods.map(geometry => {
+					geometry.map(element => {
+						let obj = {
+							polygons: []
+						};
+						element.map(p => {
+							obj.polygons.push(p[0], p[1]);
+						})
+						geometrys.push(obj);
+					});
+				});
+
+				geometrys.map(pol => {
+					var p = viewer.entities.add({
+						polyline: {
+							positions: Cesium.Cartesian3.fromDegreesArray(pol.polygons),
+							width: 5,
+							material: Cesium.Color.fromCssColorString(
+								"#dbf449"
+							).withAlpha(0.75)
+						}
+					});
+				});
+				
+				console.log('loadEnd', new Date())
+
+			}); */
+
+			/* $.ajax({
+				url: 'china.json',
+				dataType: "json",
+				success: function(result) {
+					console.log('1', new Date());
+					let cods = result.features[0].geometry.coordinates;
+					var geometrys = [];
+					cods.map(geometry => {
+						geometry.map(element => {
+							let obj = {
+								polygons: []
+							};
+							element.map(p => {
+								obj.polygons.push(p[0], p[1]);
+							})
+							geometrys.push(obj);
+						});
+					});
+
+					geometrys.map(pol => {
+						var p = viewer.entities.add({
+							polyline: {
+								positions: Cesium.Cartesian3.fromDegreesArray(pol.polygons),
+								width: 5,
+								material: Cesium.Color.fromCssColorString(
+									"#dbf449"
+								).withAlpha(0.75)
+							}
+						});
+					});
+
+					console.log('2', new Date());
+
+					console.log('loadEnd', new Date())
+
+				},
+				complete: function() {
+					console.log('complete', new Date())
+				},
+			}); */
+
+			console.log('loadNineStart', new Date())
+			let loadPromise = viewer.dataSources.add(Cesium.GeoJsonDataSource.load('china-line.json', {
+				stroke: Cesium.Color.HOTPINK,
+				strokeWidth: 6
+			}));
+
+			loadPromise.then((dataSource) => {
+				console.log('loadNineEnd', new Date())
+			});
+			
+			console.log('loadChinaStart', new Date())
+			let loadPromise2 = viewer.dataSources.add(Cesium.GeoJsonDataSource.load('nine-line.json', {
+				stroke: Cesium.Color.HOTPINK,
+				strokeWidth: 6
+			}));
+			
+			loadPromise2.then((dataSource) => {
+				console.log('loadChinaEnd', new Date())
+			});
+		}
+
+		setTimeout(test, 1000)
+	</script>
+</html>

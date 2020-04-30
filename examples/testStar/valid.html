@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>星光坐标验证</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/Cesium/Cesium.js"></script>
+	</head>
+	<body>
+		<div id="mapContainer" style="height: 100%;width: 100%;"></div>
+		<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+		<script src="changeLonLat.js"></script>
+
+		<script type="text/javascript">
+			let lastEntity = null;
+
+			function test() {
+
+				// 北京 { minLon: 115.55938774774775, maxLon: 117.30192225225225, minLat: 39.484547747747747, maxLat: 40.761227252252255 }
+				// 东城 { minLon: 116.37493774774775, maxLon: 116.44325225225225, minLat: 39.855667747747745, maxLat: 39.972708252252254 }
+				// 全国 { minLon: 111.62266374774775, maxLon: 131.00078125225224, minLat: 24.37786374774775, maxLat: 50.424552252252255 }
+
+
+				let pos = {
+					minLon: 111.62266374774775,
+					maxLon: 131.00078125225224,
+					minLat: 24.37786374774775,
+					maxLat: 50.424552252252255
+				};
+
+				let width = 804,
+					height = 1080;
+
+				let xLen = (pos.maxLon - pos.minLon) / 12;
+				let yLen = (pos.maxLat - pos.minLat) / 12;
+
+				for (let i = 0; i < 13; i++) {
+					for (let j = 0; j < 13; j++) {
+						let transPos = WGS2GCJTransform(pos.minLon + (xLen * i), pos.minLat + (yLen * j));
+						viewer.entities.add({
+							position: Cesium.Cartesian3.fromDegrees(transPos.lon, transPos.lat),
+							point: {
+								pixelSize: 8,
+								color: Cesium.Color.RED.withAlpha(0.5),
+								zIndex: 2
+							}
+						});
+					}
+				}
+
+				let minPos = WGS2GCJTransform(pos.minLon, pos.minLat);
+				let maxPos = WGS2GCJTransform(pos.maxLon, pos.maxLat);
+
+				let entity = viewer.entities.add({
+					rectangle: {
+						coordinates: Cesium.Rectangle.fromDegrees(minPos.lon, minPos.lat, maxPos.lon, maxPos.lat),
+						material: "12132_20191223180129.png",
+						zIndex: 1
+					}
+				});
+
+
+
+
+
+				viewer.flyTo(entity);
+			}
+
+
+			setTimeout(test, 1000)
+		</script>
+	</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>加载大型模型</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/Cesium/Cesium.js"></script>
+	</head>
+	<body>
+		<div id="mapContainer" style="height: 100%;width: 100%;"></div>
+		<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			let lastEntity = null;
+
+			function test() {
+
+				//开启抗锯齿
+				// viewer.scene.postProcessStages.fxaa.enabled = true;
+
+				/* Cesium.Texture.prototype.generateMipmap = function(hint) {
+					hint = hint | Cesium.MipmapHint.DONT_CARE;
+
+				} */
+
+				let model = createModel('./model/gugong.gltf', 0);
+
+				let scene = viewer.scene;
+
+				let handler = new Cesium.ScreenSpaceEventHandler(
+					viewer.scene.canvas
+				);
+
+				var entity = viewer.entities.add({
+					label: {
+						show: false,
+						showBackground: true,
+						font: '14px monospace',
+						horizontalOrigin: Cesium.HorizontalOrigin.LEFT,
+						verticalOrigin: Cesium.VerticalOrigin.TOP,
+						pixelOffset: new Cesium.Cartesian2(15, 0)
+					}
+				});
+
+				handler.setInputAction(function(movement) {
+					var cartesian = viewer.camera.pickEllipsoid(movement.endPosition, scene.globe.ellipsoid);
+					if (cartesian) {
+						var cartographic = Cesium.Cartographic.fromCartesian(cartesian);
+						var longitudeString = Cesium.Math.toDegrees(cartographic.longitude).toFixed(6);
+						var latitudeString = Cesium.Math.toDegrees(cartographic.latitude).toFixed(6);
+
+						entity.position = cartesian;
+						entity.label.show = true;
+						entity.label.text =
+							'Lon: ' + ('   ' + longitudeString).slice(-7) + '\u00B0' +
+							'\nLat: ' + ('   ' + latitudeString).slice(-7) + '\u00B0';
+					} else {
+						entity.label.show = false;
+					}
+				}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+
+				handler.setInputAction(
+					event,
+					Cesium.ScreenSpaceEventType.LEFT_CLICK
+				);
+
+				model.readyPromise.then(function(model) {
+					debugger
+					console.log(model._rendererResources.textures);
+				});
+			}
+
+			function createModel(url, height) {
+				viewer.entities.removeAll();
+
+				/* var position = Cesium.Cartesian3.fromDegrees(116.4, 39.9, height);
+				var heading = Cesium.Math.toRadians(135); */
+				/* var pitch = 0;
+				var roll = 0;
+				var hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+				var orientation = Cesium.Transforms.headingPitchRollQuaternion(position, hpr); */
+
+				var hpr = new Cesium.HeadingPitchRoll(-0.013, 0.0, 0.0);
+				var origin = Cesium.Cartesian3.fromDegrees(116.39705, 39.917200, 0);
+				var modelMatrix = Cesium.Transforms.headingPitchRollToFixedFrame(origin, hpr);
+
+				let test = Cesium.Model.fromGltf({
+					url: url,
+					modelMatrix: modelMatrix,
+					minimumPixelSize: 32,
+					scale: 0.0096,
+				});
+
+				var model = viewer.scene.primitives.add(test);
+				// viewer.trackedEntity = entity;
+				debugger
+				console.log(model._rendererResources.textures);
+				// entity._rendererResources.texture.generateMipmap();
+
+				viewer.flyTo(model, {
+					//单位是秒,1000会卡死相机
+					duration: 3
+				})
+
+				return model;
+			}
+
+
+			function event(e) {
+				if (!viewer) {
+					viewer = window.viewer;
+				}
+
+				let pick = this.viewer.scene.pick(e.position);
+
+			}
+
+
+
+			setTimeout(test, 1000)
+		</script>
+	</body>
+</html>
