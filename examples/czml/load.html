@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>CZML加载</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/Cesium/Cesium.js"></script>
+	</head>
+	<body>
+		<div id="mapContainer" style="height: 100%;width: 100%;"></div>
+		<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			let lastEntity = null;
+
+			function test() {
+
+				Cesium.CzmlDataSource.load("czml.json").then(dataSource => {
+					viewer.dataSources.add(dataSource);
+					alert(1);
+					viewer.flyTo(dataSource, {
+						//单位是秒,1000会卡死相机
+						duration: 3
+					})
+				})
+
+				let handler = new Cesium.ScreenSpaceEventHandler(
+					viewer.scene.canvas
+				);
+
+				handler.setInputAction(
+					event,
+					Cesium.ScreenSpaceEventType.LEFT_CLICK
+				);
+			}
+
+			function event(e) {
+				if (!viewer) {
+					viewer = window.viewer;
+				}
+
+				let pick = this.viewer.scene.pick(e.position);
+				if (pick) {
+					if (pick.id && pick.id.polygon) {
+						let entity = pick.id;
+						let code = entity.name;
+						lastEntity = entity.polygon;
+						//记录前一个材质，区域着色用，记录一次后不再记录，选中同一个两次就覆盖了
+						if (entity.polygon.flag == "area" && !entity.polygon.lastColor) {
+							entity.polygon.lastColor = entity.polygon.material;
+						}
+						entity.polygon.material = Cesium.Color.fromCssColorString("#cada4f").withAlpha(0.2);
+					}
+				} else if (lastEntity) {
+					if (lastEntity.lastColor) {
+						lastEntity.material = entity.lastColor;
+						lastEntity.lastColor = null;
+					} else {
+						lastEntity.material = Cesium.Color.WHITE.withAlpha(0.005);
+					}
+				}
+			}
+
+
+
+			setTimeout(test, 1000)
+		</script>
+	</body>
+</html>

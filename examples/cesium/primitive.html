@@ -28,20 +28,21 @@
 			var earth;
 			var bgImagery;
 
-			function startup() {
+			function startup () {
 				earth = new XE.Earth('earthContainer');
 
 				earth.sceneTree.root = {
 					"children": [{
 						"czmObject": {
-							"name": "默认离线影像",
+							"name": "谷歌影像",
 							"xbsjType": "Imagery",
 							"xbsjImageryProvider": {
-								"createTileMapServiceImageryProvider": {
-									"url": XE.HTML.cesiumDir + 'Assets/Textures/NaturalEarthII',
-									"fileExtension": 'jpg',
+								"XbsjImageryProvider": {
+									"url": "//www.google.cn/maps/vt?lyrs=s,h&gl=CN&x={x}&y={y}&z={z}",
+									"srcCoordType": "GCJ02",
+									"dstCoordType": "WGS84",
+									"maximumLevel": 21,
 								},
-								"type": "createTileMapServiceImageryProvider"
 							}
 						}
 					}, ]
@@ -133,7 +134,7 @@
 						// 1.5 定义纹理
 						var texture = undefined;
 						var imageUri = './images/earth.png';
-						Cesium.Resource.createIfNeeded(imageUri).fetchImage().then(function(image) {
+						Cesium.Resource.createIfNeeded(imageUri).fetchImage().then(function (image) {
 							console.log('image loaded!');
 							var vtxfTexture;
 							var context = viewer.scene.context;
@@ -223,7 +224,7 @@
                         }
                         `;
 						// 1.8 创建vertexArray
-						function createVertexArray(context) {
+						function createVertexArray (context) {
 							var geometry = new Cesium.Geometry({
 								attributes: {
 									position: new Cesium.GeometryAttribute({
@@ -259,7 +260,7 @@
 							return vertexArray;
 						};
 						// 1.9 创建command
-						function createCommand(context) {
+						function createCommand (context) {
 							var translucent = false;
 							var closed = true;
 							// 借用一下Appearance.getDefaultRenderState
@@ -272,7 +273,7 @@
 								sources: [vtxfFragmentShader]
 							});
 							var uniformMap = {
-								myImage: function() {
+								myImage: function () {
 									if (Cesium.defined(texture)) {
 										return texture;
 									} else {

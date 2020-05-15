@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>区域着色</title>
+		<script src="../../js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/earthsdk/dist/XbsjEarth/XbsjEarth.js"></script>
+		<link rel="stylesheet" type="text/css" href="../../js/layui-v2.5.4/css/layui.css" />
+		<link rel="stylesheet/less" type="text/css" href="../../less/gg.less" />
+		<!-- 必须放样式下，官网顺序是错误的 -->
+		<script src="../../js/less.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/mock.min.js" type="text/javascript" charset="utf-8"></script>
+
+		<style type="text/css">
+			body {
+				background: linear-gradient(#b4ced7, #e9f5f4);
+			}
+
+			#mapContainer {
+
+				background: linear-gradient(#b4ced7, #e9f5f4);
+			}
+
+			.light-card {
+				background: rgba(0, 0, 0, 0.2);
+			}
+
+			.tip-region {
+				position: absolute;
+				top: -1000px;
+				left: -300px;
+				width: auto;
+				z-index: 1000;
+				pointer-events: none;
+			}
+
+			.tip-board {
+				position: relative;
+				background: rgba(255, 255, 255, 0.85);
+				min-width: 126px;
+				height: 50px;
+				margin: 3px 3px 0 6px;
+				box-shadow: -1px 2px 4px rgba(0, 0, 0, 0.65);
+			}
+
+			.tip-board::before {
+				position: absolute;
+				background: rgba(255, 255, 255, 0.85);
+				content: "";
+				width: 12px;
+				height: 12px;
+				top: 50%;
+				transform: rotate(45deg);
+				left: -6px;
+			}
+
+
+
+			.tip-name {
+				width: 100%;
+				height: 22px;
+				line-height: 22px;
+				padding-left: 5px;
+				background: url("./board-rt.jpg") center right no-repeat;
+				background-color: #f39c12;
+				font-size: 14px;
+				color: #fff;
+				text-align: left;
+			}
+
+			.tip-content {
+				position: absolute;
+				top: 22px;
+				left: 0;
+				width: 100%;
+				height: 28px;
+				line-height: 28px;
+				font-size: 12px;
+				text-align: left;
+				padding-left: 5px;
+			}
+
+			.tip-content span {
+				vertical-align: bottom;
+			}
+
+			.tip-value {
+				position: absolute;
+				right: 0;
+				bottom: 0;
+				font-family: "cf_DINCond";
+				font-size: 26px;
+				color: #f29a12;
+				padding-right: 5px;
+			}
+
+			.map_box {
+				position: absolute;
+				z-index: 1;
+				right: 0;
+				bottom: 0;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+				pointer-events: none;
+				display: -webkit-box;
+				display: -ms-flexbox;
+				display: flex;
+				-webkit-box-orient: vertical;
+				-webkit-box-direction: reverse;
+				-ms-flex-direction: column-reverse;
+				flex-direction: column-reverse;
+				align-items: flex-end;
+				justify-content: flex-end;
+			}
+
+			.nine_line {
+				width: 100px;
+			}
+
+			.map_legend {
+				background: rgba(194, 208, 214, 0.5);
+				width: 100px;
+				min-height: 100px;
+				margin-bottom: 20px;
+				border-radius: 3px;
+				box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) inset,
+					0 -2px 6px rgba(0, 0, 0, 0.2) inset;
+			}
+
+			.legend-title {
+				width: calc(100% - 20px);
+				height: 28px;
+				line-height: 30px;
+				font-family: "cf_YouYuan";
+				font-size: 16px;
+				color: #333333;
+				margin: 0 10px;
+				text-align: left;
+				border-bottom: 1px solid rgba(0, 0, 0, 0.5);
+			}
+
+			.legend-content {
+				position: relative;
+				margin: 10px 0;
+			}
+
+			.strip {
+				position: absolute;
+				top: 0;
+				left: 15px;
+				width: 10px;
+				height: 100%;
+			}
+
+
+			.legend {
+				width: 100%;
+				height: 28px;
+				line-height: 28px;
+				font-family: "cf_MsYh";
+				font-size: 14px;
+				color: #000;
+				text-align: left;
+				padding-left: 15px;
+			}
+
+			.legend-icon {
+				display: inline-block;
+				width: 14px;
+				height: 14px;
+				margin-right: 10px;
+			}
+
+			.strip-legend {
+				padding-left: 25px;
+			}
+
+			.strip-legend:first-child {
+				padding-bottom: 8px;
+			}
+
+			.strip-legend:last-child {
+				padding-top: 10px;
+			}
+
+			.strip-legend span {
+				display: block;
+				height: 20px;
+				/* line-height: 20px; */
+			}
+		</style>
+	</head>
+	<body>
+		<div id="mapContainer"></div>
+		<div class="map_box">
+			<img class="nine_line" :style="nineStyle" src="./map_nineline.jpg" />
+
+			<div class="map_legend" v-show="legendShow&&legends.length">
+				<div class="legend-title">图例</div>
+				<div class="legend-content">
+
+				</div>
+			</div>
+		</div>
+		<!-- 第二步：建立视图。用于呈现渲染结果。 -->
+		<div class="tip-region"></div>
+		<div class="layui-card light-card">
+			<div class="layui-card-header">调色器</div>
+			<div class="layui-card-body">
+				<form class="layui-form" action="">
+					<div class="layui-form-item">
+						<label class="layui-form-label">颜色1</label>
+						<div class="layui-input-inline" style="width: 120px;">
+							<input type="text" value="" placeholder="请选择颜色" class="layui-input" id="color-input1">
+						</div>
+						<div class="layui-inline" style="left: -11px;">
+							<div id="color-form1"></div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">颜色2</label>
+						<div class="layui-input-inline" style="width: 120px;">
+							<input type="text" value="" placeholder="请选择颜色" class="layui-input" id="color-input2">
+						</div>
+						<div class="layui-inline" style="left: -11px;">
+							<div id="color-form2"></div>
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">颜色3</label>
+						<div class="layui-input-inline" style="width: 120px;">
+							<input type="text" value="" placeholder="请选择颜色" class="layui-input" id="color-input3">
+						</div>
+						<div class="layui-inline" style="left: -11px;">
+							<div id="color-form3"></div>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
+	</body>
+	<script src="../../js/layui-v2.5.4/layui.js" type="text/javascript" charset="utf-8"></script>
+
+	//第一步：编写模版。你可以使用一个script标签存放模板，如：
+	<script id="tip" type="text/html">
+		<div class="tip-board">
+			<div class="tip-name">{{hoverTip.name}}</div>
+			<div class="tip-content">
+				<span>数量</span>
+				<span class="tip-value">{{hoverTip.value}}</span>
+			</div>
+		</div>
+	</script>
+
+	<script id="legend" type="text/html">
+		<div class="strip" ></div>
+		<ul style="margin-left: 35px;">
+			{{# layui.each(legends, function(index, item){ }}
+				<li class="legend strip-legend">
+					<span>{{ item.name }}</span>
+				</li>
+				{{# }); }}
+		</ul>
+	</script>
+
+	<script type="text/javascript">
+		//第三步：渲染模版
+		var hoverTip = { //数据
+			name: '',
+			value: 0
+		}
+
+		var legends = [];
+
+		layui.use(['element', 'layer', 'colorpicker', 'laytpl'], function () {
+			var element = layui.element;
+			colorpicker = layui.colorpicker;
+			laytpl = layui.laytpl;
+			element.init();
+
+			//表单赋值
+			colorpicker.render({
+				elem: '#color-form1',
+				color: ladderColor1,
+				done: function (color) {
+					$('#color-input1').val(color);
+					ladderColor1 = color;
+					drawRegion();
+				}
+			});
+
+			colorpicker.render({
+				elem: '#color-form2',
+				color: ladderColor2,
+				done: function (color) {
+					$('#color-input2').val(color);
+					ladderColor2 = color;
+					drawRegion();
+				}
+			});
+
+			colorpicker.render({
+				elem: '#color-form3',
+				color: ladderColor3,
+				done: function (color) {
+					$('#color-input3').val(color);
+					ladderColor3 = color;
+					drawRegion();
+				}
+			});
+
+			$('#color-input1').val(ladderColor1);
+			$('#color-input2').val(ladderColor2);
+			$('#color-input3').val(ladderColor3);
+
+			//只要改变就会触发
+			/* $('#color-input1').on('input', function (e) {
+				//获取input输入的值
+				console.log(e.delegateTarget.value);
+			}) */
+
+			//失去焦点触发
+			$('#color-input1').change(function (e) {
+				//获取input输入的值
+				ladderColor1 = e.delegateTarget.value
+
+				colorpicker.render({
+					elem: '#color-form1',
+					color: ladderColor1,
+					done: function (color) {
+						$('#color-input1').val(color);
+						ladderColor1 = color;
+						drawRegion();
+					}
+				});
+
+				drawRegion();
+			})
+
+			$('#color-input2').change(function (e) {
+				//获取input输入的值
+				ladderColor2 = e.delegateTarget.value;
+				colorpicker.render({
+					elem: '#color-form2',
+					color: ladderColor2,
+					done: function (color) {
+						$('#color-input2').val(color);
+						ladderColor2 = color;
+						drawRegion();
+					}
+				});
+
+				drawRegion();
+			})
+
+			$('#color-input3').change(function (e) {
+				ladderColor3 = e.delegateTarget.value;
+				colorpicker.render({
+					elem: '#color-form3',
+					color: ladderColor3,
+					done: function (color) {
+						$('#color-input3').val(color);
+						ladderColor3 = color;
+						drawRegion();
+					}
+				});
+
+				drawRegion();
+			})
+
+			var getTipTpl = tip.innerHTML,
+				tipView = $('.tip-region')[0];
+			laytpl(getTipTpl).render(hoverTip, function (html) {
+				tipView.innerHTML = html;
+			});
+
+			//必须每次调用才行
+			var getLegendTpl = legend.innerHTML,
+				legendView = $('.legend-content')[0];
+			laytpl(getLegendTpl).render(legends, function (html) {
+				legendView.innerHTML = html;
+			});
+
+		});
+	</script>
+
+	<script type="text/javascript">
+		var earth;
+		var regions = undefined;
+		var ladderColor1 = "#E3F733";
+		var ladderColor2 = "#EF50C4";
+		var ladderColor3 = "#6433F7";
+		var regionValues = undefined;
+		var defaultMaterial = undefined;
+		var ColorLadder = undefined;
+		var isAvg = false;
+
+
+		function loadChinaRegion () {
+			Cesium.CzmlDataSource.load("100000.czml").then(ds => {
+				earth.czm.viewer.dataSources.add(ds);
+				regions = ds.entities.values.map(entity => entity.polygon);
+			});
+		}
+
+		function mouseMoveHander (e) {
+			this.mousePos = [e.endPosition.x, e.endPosition.y];
+			let pick = earth.czm.scene.pick(e.endPosition);
+			if (pick && pick.id) {
+
+				let code = pick.id.name;
+				let hoverRegion = regions.find(r => r.name == code);
+				if (hoverRegion && hoverRegion.num > 0) {
+					tipRegion.style.left = e.endPosition.x + 6 + "px";
+					tipRegion.style.top = e.endPosition.y - 34 + "px";
+					hoverTip = {
+						name: hoverRegion.code,
+						value: hoverRegion.num
+					};
+					var getTipTpl = tip.innerHTML,
+						tipView = $('.tip-region')[0];
+					laytpl(getTipTpl).render(hoverTip, function (html) {
+						tipView.innerHTML = html;
+					});
+				} else {
+					tipRegion.style.top = "-1000px";
+					tipRegion.style.left = "-1000px";
+				}
+			} else {
+				tipRegion.style.top = "-1000px";
+				tipRegion.style.left = "-1000px";
+			}
+		}
+
+		function drawRegion () {
+			let colorHash = {};
+			let len = regions.length;
+			let colorLadder = new ColorLadder(
+				ladderColor1,
+				ladderColor2,
+				ladderColor3
+			);
+			let ladder = colorLadder.getMaxMin(regionValues, "value");
+			setLegend(ladder);
+			for (let i = 0; i < len; i++) {
+				let entity = regions[i];
+				//设置区域标识
+				entity.flag = "Region";
+				let name = entity.definitionChanged._scopes[0].name;
+				entity.name = name;
+
+				let color = colorHash[name];
+				let findRg = regionValues.find(r => r.code == name);
+				if (findRg) {
+					entity.num = findRg.value;
+					if (colorHash[name]) {
+						//continue;
+					} else {
+						color = colorLadder.getColor(findRg.value);
+						colorHash[name] = Cesium.Color.fromCssColorString(color);
+					}
+				} else {
+					//考虑多次绘制和重复、重新绘制的情况不能还是重新转换一遍合适
+					// colorHash[name] = entity.material;
+					// Cesium.Color.fromCssColorString("#d4ecfb").withAlpha(0.35);
+					colorHash[name] = defaultMaterial;
+					entity.num = 0;
+				}
+				entity.code = entity.definitionChanged._scopes[0].description._value;
+				entity.material = colorHash[name];
+				entity.backMaterial = colorHash[name];
+			}
+		}
+
+		function setLegend (ladder) {
+			legends = [];
+			if (ladder) {
+				if (ladder.max == ladder.min) {
+					isAvg = true;
+				} else {
+					isAvg = false;
+				}
+				legends = [{
+						name: ladder.max
+					},
+					{
+						name: ladder.min
+					}
+				];
+			}
+
+
+			//必须每次调用才行
+			var getLegendTpl = legend.innerHTML,
+				legendView = $('.legend-content')[0];
+			laytpl(getLegendTpl).render(legends, function (html) {
+				legendView.innerHTML = html;
+			});
+
+			//必须再重新渲染模板之后不然会被覆盖
+			if (isAvg) {
+				$('.strip')[0].style.background = ladderColor3;
+			} else {
+				$('.strip')[0].style.background = "linear-gradient(" +
+					ladderColor3 +
+					"," +
+					ladderColor2 +
+					"," +
+					ladderColor1 +
+					")";
+			}
+
+		}
+
+		function startup () {
+
+
+
+
+			earth = new XE.Earth('mapContainer', {
+				orderIndependentTranslucency: false,
+				contextOptions: {
+					webgl: {
+						alpha: true
+					}
+				}
+			});
+
+			//设备背景透明
+			// earth.czm.scene.backgroundColor = new Cesium.Color(0.0, 0.0, 0.0, 0.0);
+			//禁用光照和地面大气
+			earth.czm.scene.globe.enableLighting = false;
+
+			earth.czm.scene.globe.showGroundAtmosphere = false;
+			earth.czm.scene.skyBox.show = false;
+			earth.czm.scene.backgroundColor = new Cesium.Color(0.0, 0.0, 0.0, 0.0);
+			/* earth.weather.atmosphere.brightnessShift = 0.7;
+			earth.weather.atmosphere.hueShift = 0.5;
+			earth.weather.atmosphere.saturationShift = -0.35; */
+			earth.weather.atmosphere.brightnessShift = -1;
+
+			earth.sceneTree.root = {
+				"children": [{
+					"czmObject": {
+						"name": "谷歌影像",
+						"xbsjType": "Imagery",
+						"xbsjImageryProvider": {
+							"createTileMapServiceImageryProvider": {
+								url: "//117.78.6.226:8082/DHGStreet_World_00-09_2/"
+							},
+							type: "createTileMapServiceImageryProvider"
+						}
+					}
+				}, ]
+			};
+
+			const viewer = earth.czm.viewer;
+
+			loadChinaRegion();
+			defaultMaterial = Cesium.Color.fromCssColorString(
+				"#d4ecfb"
+			).withAlpha(0.35);
+
+
+			tipRegion = $('.tip-region')[0];
+
+			let handler = new Cesium.ScreenSpaceEventHandler(earth.czm.viewer.canvas);
+
+			//区域着色点击事件
+			handler.setInputAction(
+				e => mouseMoveHander(e),
+				Cesium.ScreenSpaceEventType.MOUSE_MOVE
+			);
+		}
+
+		XE.ready().then(startup);
+	</script>
+
+	<script type="module">
+		import ColorLadder from '../../utils/colorLadder.js';
+				window.ColorLadder=ColorLadder;
+		 let data = Mock.mock({
+		      "array|5-20": [
+		        {
+		          "code|+1": ["1100","1200","1300","1400",		            "1500",		            "2100",		            "2200",		            "2300",
+		            "3100",		            "3200",
+		            "3300",		            "3400",
+		            "3500",		            "3600",
+		            "3700",		            "4100",
+		            "4200",
+		            "4300",
+		            "4400",		            "4500",
+		            "4600",		            "5000",
+		            "5100",
+		            "5200",
+		            "5300",		            "5400",
+		            "6100",
+		            "6200",
+		            "6300",
+		            "6400",		            "6500",
+		            "7100",		            "8100",
+		            "8200",
+		          ],
+		          "value|1-100": 100,
+		        },
+		      ],
+		    });
+			
+			 regionValues=data.array;
+			 
+			 console.log(regionValues)
+			 setTimeout(drawRegion,3000);
+		
+	</script>
+</html>

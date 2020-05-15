@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>CZML区域扣洞</title>
+		<script src="../../js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/earthsdk/dist/XbsjEarth/XbsjEarth.js"></script>
+		<link rel="stylesheet" type="text/css" href="../../js/layui-v2.5.4/css/layui.css" />
+		<link rel="stylesheet/less" type="text/css" href="../../less/gg.less" />
+		<!-- 必须放样式下，官网顺序是错误的 -->
+		<script src="../../js/less.min.js" type="text/javascript" charset="utf-8"></script>
+
+		<style type="text/css">
+
+		</style>
+	</head>
+	<body>
+		<div id="mapContainer"></div>
+	</body>
+	<script src="../../js/layui-v2.5.4/layui.js" type="text/javascript" charset="utf-8"></script>
+
+
+	<script type="text/javascript">
+		layui.use(['element', 'layer'], function () {
+			var element = layui.element;
+			element.init();
+		});
+	</script>
+
+	<script type="text/javascript">
+		var earth;
+		var regions;
+		var selectCode;
+		var selectMaterial;
+		var backMaterial;
+
+
+		function loadHolesRegion () {
+			Cesium.CzmlDataSource.load("3700.czml").then(ds => {
+				// earth.czm.viewer.camera.lookAt(ds);
+				earth.czm.viewer.dataSources.add(ds);
+
+				regions = ds.entities.values.map(entity => {
+					let polygon = entity.polygon;
+					polygon.name = polygon.definitionChanged._scopes[0].name
+					return polygon;
+				});
+
+				/* let entity = ds.entities.values[0];
+				console.log(entity);
+				*/
+				// setTimeout(() => earth.czm.viewer.camera.lookAt(entity), 1000);
+
+				//单位是秒,1000会卡死相机
+				earth.czm.viewer.flyTo(ds, 1);
+			});
+		}
+
+		function leftClickHander (e) {
+			let pick = earth.czm.scene.pick(e.position);
+			debugger
+			if (pick && pick.id) {
+				let code = pick.id.name;
+				if (code && selectCode == code) {
+					let selectRegions = regions.filter(r => r.name == code);
+					selectRegions.map(entity => (entity.material = entity.backMaterial));
+					selectCode = undefined;
+					// this.$emit("setProvince", selectCode);
+					return;
+				} else if (selectCode) {
+					let lastRegions = regions.filter(
+						r => r.name == selectCode
+					);
+					lastRegions.map(entity => (entity.material = entity.backMaterial));
+					selectCode = undefined;
+				}
+				let selectRegions = regions.filter(r => r.name == code);
+				selectRegions.map(entity => (entity.material = this.selectMaterial));
+				selectCode = code;
+				// this.$emit("setProvince", selectCode);
+			} else {
+				if (selectCode) {
+					let lastRegions = regions.filter(
+						r => r.name == selectCode
+					);
+					lastRegions.map(entity => (entity.material = entity.backMaterial));
+					// this.$emit("setProvince", null);
+				}
+				selectCode = undefined;
+			}
+		}
+
+		function startup () {
+
+			earth = new XE.Earth('mapContainer', {});
+
+			earth.sceneTree.root = {
+				"children": [{
+					"czmObject": {
+						"name": "高德地图",
+						"xbsjType": "Imagery",
+						"xbsjImageryProvider": {
+							"XbsjImageryProvider": {
+								"url": "//webst02.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}",
+								"srcCoordType": "GCJ02",
+								"dstCoordType": "WGS84",
+								"maximumLevel": 18,
+							},
+						}
+					}
+				}, ]
+			};
+
+			const viewer = earth.czm.viewer;
+
+			selectMaterial = Cesium.Color.fromCssColorString(
+				'#FEB34E'
+			).withAlpha(0.6);;
+			backMaterial = Cesium.Color.fromCssColorString(
+				"#ffffff"
+			).withAlpha(0.05);
+
+			loadHolesRegion();
+
+			let handler = new Cesium.ScreenSpaceEventHandler(earth.czm.viewer.canvas);
+
+			//区域着色点击事件
+			handler.setInputAction(
+				e => leftClickHander(e),
+				Cesium.ScreenSpaceEventType.LEFT_CLICK
+			);
+		}
+
+		XE.ready().then(startup);
+	</script>
+</html>
