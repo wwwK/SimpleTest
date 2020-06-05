@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>气泡图Shader实现</title>
+		<link rel="stylesheet" type="text/css" href="/css/gg.css" />
+		<link rel="stylesheet" type="text/css" href="../../js/Cesium/Widgets/widgets.css" />
+		<script src="/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/Cesium/Cesium.js"></script>
+		<script src="../../extend/testwall.js"></script>
+	</head>
+	<body>
+		<div id="mapContainer" style="height: 100%;width: 100%;"></div>
+		<script src="../../init.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../../js/mock-min.js" type="text/javascript" charset="utf-8"></script>
+
+		<script>
+			import Material from '../../extend/Material.js';
+		</script>
+
+		<script type="text/javascript">
+			function test () {
+
+				//单位:s
+				let time = 30;
+
+				let mockData = Mock.mock({
+					'array|1-100': [{
+						"name": function () {
+							return Mock.Random.guid()
+						},
+						"lon|116.5": 1,
+						"lat|39.5": 1,
+						"radius|1-10": 10
+					}]
+				});
+
+				var greenWall = viewer.entities.add({
+					name: 'Green wall from surface with outline',
+					wall: {
+						positions: Cesium.Cartesian3.fromDegreesArrayHeights(
+							[-107.0, 43.0, 100000.0,
+								-97.0, 43.0, 100000.0,
+								-97.0, 40.0, 100000.0,
+								-107.0, 40.0, 100000.0,
+								-107.0, 43.0, 100000.0
+							]),
+						material: new Cesium.PolylineTrailLinkMaterialProperty(Cesium.Color.GREEN, 3000), //红和绿的叠加就成黄色的了.
+						outline: false
+					}
+				});
+
+				let handler = new Cesium.ScreenSpaceEventHandler(
+					viewer.scene.canvas
+				);
+			}
+
+
+			setTimeout(test, 1000)
+		</script>
+	</body>
+</html>

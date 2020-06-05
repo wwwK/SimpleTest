@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>警戒线</title>
+		<script src="../../js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/earthsdk/dist/XbsjEarth/XbsjEarth.js"></script>
+		<link rel="stylesheet" type="text/css" href="../../js/layui-v2.5.4/css/layui.css" />
+		<link rel="stylesheet/less" type="text/css" href="../../less/gg.less" />
+		<!-- 必须放样式下，官网顺序是错误的 -->
+		<script src="../../js/less.min.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<div id="mapContainer"></div>
+		<div class="layui-card light-card">
+			<div class="layui-card-header">卡片面板</div>
+			<div class="layui-card-body">
+				卡片式面板面板通常用于非白色背景色的主体内<br>
+				从而映衬出边框投影
+			</div>
+		</div>
+	</body>
+
+	<script src="../../js/layui-v2.5.4/layui.js" type="text/javascript" charset="utf-8"></script>
+
+	<script type="text/javascript">
+		layui.use(['element'], function () {
+			var element = layui.element;
+			element.init();
+		});
+	</script>
+
+	<script type="text/javascript">
+		var earth, viewer;
+		var outlineColor = "#4FA6DB";
+		var outlineWidth = 3;
+		var inlineColor = "#4FA6DB";
+		var inlineWith = 2;
+
+		function loadLine () {
+			let data = {
+				center: {
+					id: 0,
+					lon: 114.302312702,
+					lat: 30.598026044,
+					size: 20,
+					color: Cesium.Color.PURPLE
+				},
+				points: [{
+					id: 1,
+					lon: 115.028495718,
+					lat: 30.200814617,
+					color: Cesium.Color.YELLOW,
+					size: 15
+				}, {
+					id: 2,
+					lon: 110.795000473,
+					lat: 32.638540762,
+					color: Cesium.Color.RED,
+					size: 15
+				}, {
+					id: 3,
+					lon: 111.267729446,
+					lat: 30.698151246,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 4,
+					lon: 112.126643144,
+					lat: 32.058588576,
+					color: Cesium.Color.GREEN,
+					size: 15
+				}, {
+					id: 5,
+					lon: 114.885884938,
+					lat: 30.395401912,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 6,
+					lon: 112.190419415,
+					lat: 31.043949588,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 7,
+					lon: 113.903569642,
+					lat: 30.93205405,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 8,
+					lon: 112.226648859,
+					lat: 30.367904255,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 9,
+					lon: 114.86171677,
+					lat: 30.468634833,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 10,
+					lon: 114.317846048,
+					lat: 29.848946148,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 11,
+					lon: 113.371985426,
+					lat: 31.70498833,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 12,
+					lon: 109.468884533,
+					lat: 30.289012191,
+					color: Cesium.Color.BLUE,
+					size: 15
+				}, {
+					id: 13,
+					lon: 113.414585069,
+					lat: 30.368350431,
+					color: Cesium.Color.SALMON,
+					size: 15
+				}, {
+					id: 14,
+					lon: 112.892742589,
+					lat: 30.409306203,
+					color: Cesium.Color.WHITE,
+					size: 15
+				}, {
+					id: 15,
+					lon: 113.16085371,
+					lat: 30.667483468,
+					color: Cesium.Color.SALMON,
+					size: 15
+				}, {
+					id: 16,
+					lon: 110.670643354,
+					lat: 31.74854078,
+					color: Cesium.Color.PINK,
+					size: 15
+				}]
+			}
+
+			let center = Cesium.Cartesian3.fromDegrees(data.center.lon, data.center.lat);
+
+			data.points.map(d => {
+				let end = Cesium.Cartesian3.fromDegrees(d.lon, d.lat);
+				var instance = new Cesium.GeometryInstance({
+					geometry: new Cesium.GroundPolylineGeometry({
+						width: 5,
+						positions: [center, end]
+					}),
+					attributes: {}
+				});
+
+				const materialOpts = {
+					fabric: {
+						type: 'PolylineDash',
+						uniforms: {
+							color: {
+								red: 1,
+								green: 1,
+								blue: 0,
+								alpha: 1
+							},
+							gapColor: {
+								red: 1,
+								green: 1,
+								blue: 1,
+								alpha: 1
+							},
+							dashLength: 50
+						}
+					}
+				}
+
+				this._primitive = viewer.scene.primitives.add(new Cesium.GroundPolylinePrimitive({
+					asynchronous: false,
+					geometryInstances: instance,
+					appearance: new Cesium.PolylineMaterialAppearance({
+						material: new Cesium.Material(materialOpts)
+					})
+				}));
+				
+				
+			});
+
+		}
+
+
+		function startup () {
+			earth = new XE.Earth('mapContainer');
+
+			earth.sceneTree.root = {
+				"children": [{
+					"czmObject": {
+						"name": "谷歌影像",
+						"xbsjType": "Imagery",
+						"xbsjImageryProvider": {
+							"XbsjImageryProvider": {
+								"url": "//www.google.cn/maps/vt?lyrs=s,h&gl=CN&x={x}&y={y}&z={z}",
+								"srcCoordType": "GCJ02",
+								"dstCoordType": "WGS84",
+								"maximumLevel": 21,
+							},
+						}
+					}
+				}, ]
+			};
+
+			viewer = earth.czm.viewer;
+
+			loadLine();
+		}
+
+		XE.ready().then(startup);
+	</script>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>后期扫描圆</title>
+		<script src="../../js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/earthsdk/dist/XbsjEarth/XbsjEarth.js"></script>
+		<link rel="stylesheet" type="text/css" href="../../js/layui-v2.5.4/css/layui.css" />
+		<link rel="stylesheet/less" type="text/css" href="../../less/gg.less" />
+		<!-- 必须放样式下，官网顺序是错误的 -->
+		<script src="../../js/less.min.js" type="text/javascript" charset="utf-8"></script>
+
+	</head>
+	<body>
+		<div id="mapContainer"></div>
+		<div class="layui-card light-card">
+			<div class="layui-card-header">卡片面板</div>
+			<div class="layui-card-body">
+				卡片式面板面板通常用于非白色背景色的主体内<br>
+				从而映衬出边框投影
+			</div>
+		</div>
+	</body>
+
+	<script src="../../js/layui-v2.5.4/layui.js" type="text/javascript" charset="utf-8"></script>
+
+	<script type="text/javascript">
+		layui.use(['element'], function () {
+			var element = layui.element;
+			element.init();
+		});
+	</script>
+
+	<script type="text/javascript">
+		var earth;
+		var outlineColor = "#4FA6DB";
+		var outlineWidth = 3;
+		var inlineColor = "#4FA6DB";
+		var inlineWith = 2;
+		let bubbleEntity;
+
+		function createGroundCircle (earth) {
+			const evalString =
+				`
+                Cesium.Resource.createIfNeeded('../../texture/circle.png').fetchImage().then(function(image) {
+                    console.log('image loaded!');
+                    p._ctx_image = image;
+                });
+            `;
+
+			const preUpdateEvalString =
+				`
+                if (typeof p.dAngle === 'undefined') p.dAngle = 360.0;
+                p.dAngle -= 1.0;
+                if (p.dAngle < 0.0) {
+                    p.dAngle = 360.0;
+                }
+                const rotation = p.dAngle / 180.0 * Math.PI;
+
+                p.drawCanvas(ctx => {
+                    ctx.clearRect(0, 0, 512, 512);
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = "rgb(128, 128, 128)";
+                    // ctx.setLineDash([8, 8]);
+                    ctx.lineWidth = 1;
+                    ctx.arc(256, 256, 250, 0, Math.PI*2, true);
+                    ctx.stroke();
+
+                    if (p._ctx_image) {
+                        ctx.save();
+                        ctx.translate(256, 256);
+                        ctx.rotate(rotation);
+                        ctx.translate(-256, -256);
+                        ctx.drawImage(p._ctx_image, 0, 0);
+                        ctx.restore();
+                    }
+                });
+            `;
+
+			const config = {
+				evalString,
+				preUpdateEvalString,
+				position: [2.1208980215153845, 0.5450726579947579, 41.369588015024185],
+				width: 1000,
+				height: 1000,
+				canvasWidth: 512,
+				canvasHeight: 512,
+				color: [0.5, 0.8, 1, 2],
+			};
+			const p = new XE.Obj.CustomGroundRectangle(earth);
+			p.xbsjFromJSON(config);
+
+			return p;
+		}
+
+		function startup () {
+			earth = new XE.Earth('mapContainer');
+			earth.weather.atmosphere.enabled = false;
+
+			const bloom = earth.postProcess.bloom;
+			bloom.enabled = true;
+			bloom.glowOnly = false;
+			bloom.contrast = 119;
+			bloom.brightness = -0.4;
+			bloom.delta = 0.9;
+			bloom.sigma = 3.78;
+			bloom.stepSize = 5;
+			bloom.isSelected = false;
+			earth.sceneTree.root = {
+				"children": [{
+					"czmObject": {
+						"xbsjType": "Imagery",
+						"xbsjGuid": "0a74da9f-bff6-4eab-af64-d8cf95978145",
+						"name": "谷歌影像",
+						"brightness": 0.2,
+						"rectangle": null,
+						"xbsjImageryProvider": {
+							"XbsjImageryProvider": {
+								"url": "//www.google.cn/maps/vt?lyrs=s,h&gl=CN&x={x}&y={y}&z={z}",
+								"srcCoordType": "GCJ02",
+								"dstCoordType": "WGS84",
+								"maximumLevel": 21,
+							}
+						}
+					}
+				}, ]
+			};
+
+			const viewer = earth.czm.viewer;
+
+			var gc = createGroundCircle(earth);
+
+			// earth.camera.position = [2.1210391698749964, 0.544944336488856, 822.8789229124824];
+			// earth.camera.rotation = [5.190679265289419, -0.41493986255762305, 6.280299562599916];
+			// 环绕飞行
+			earth.camera.flyAround([2.1206125026580582, 0.545178729438238, 15], 3000, [0, -Math.PI / 5, 0], 0, 3.14 / 50);
+		}
+
+		XE.ready().then(startup);
+	</script>
+</html>

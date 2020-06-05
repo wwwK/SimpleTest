@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>攻击1</title>
+		<script src="../../js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/earthsdk/dist/XbsjEarth/XbsjEarth.js"></script>
+		<link rel="stylesheet" type="text/css" href="../../js/layui-v2.5.4/css/layui.css" />
+		<link rel="stylesheet/less" type="text/css" href="../../less/gg.less" />
+		<!-- 必须放样式下，官网顺序是错误的 -->
+		<script src="../../js/less.min.js" type="text/javascript" charset="utf-8"></script>
+
+	</head>
+	<body>
+		<div id="mapContainer"></div>
+		<div class="layui-card light-card">
+			<div class="layui-card-header">卡片面板</div>
+			<div class="layui-card-body">
+				卡片式面板面板通常用于非白色背景色的主体内<br>
+				从而映衬出边框投影
+			</div>
+		</div>
+	</body>
+
+	<script src="../../js/layui-v2.5.4/layui.js" type="text/javascript" charset="utf-8"></script>
+
+	<script type="text/javascript">
+		layui.use(['element'], function () {
+			var element = layui.element;
+			element.init();
+		});
+	</script>
+
+	<script type="module">
+
+		import PolylineTrailLinkMaterialProperty from '../../extend/testwall.js';
+		
+		var earth;
+		var outlineColor = "#4FA6DB";
+		var outlineWidth = 3;
+		var inlineColor = "#4FA6DB";
+		var inlineWith = 2;
+		let greenWall;
+		var viewer;
+
+		function addWall () {
+			greenWall = viewer.entities.add({
+				name: 'Green wall from surface with outline',
+				wall: {
+					positions: Cesium.Cartesian3.fromDegreesArrayHeights(
+						[-107.0, 43.0, 100000.0,
+							-97.0, 43.0, 100000.0,
+							-97.0, 40.0, 100000.0,
+							-107.0, 40.0, 100000.0,
+							-107.0, 43.0, 100000.0
+						]),
+					material: new Cesium.PolylineTrailLinkMaterialProperty(Cesium.Color.GREEN, 3000), //红和绿的叠加就成黄色的了.
+					outline: false
+				}
+			});
+		}
+
+		function startup () {
+			earth = new XE.Earth('mapContainer');
+
+			earth.sceneTree.root = {
+				"children": [{
+					"czmObject": {
+						"name": "谷歌影像",
+						"xbsjType": "Imagery",
+						"xbsjImageryProvider": {
+							"XbsjImageryProvider": {
+								"url": "//www.google.cn/maps/vt?lyrs=s,h&gl=CN&x={x}&y={y}&z={z}",
+								"srcCoordType": "GCJ02",
+								"dstCoordType": "WGS84",
+								"maximumLevel": 21,
+							},
+						}
+					}
+				}, ]
+			};
+
+			viewer = earth.czm.viewer;
+			
+			PolylineTrailLinkMaterialProperty();			
+
+			setTimeout(() => {
+				addWall();
+				
+				viewer.flyTo(greenWall);
+			}, 2000)
+		}
+
+		XE.ready().then(startup);
+	</script>
+
+</html>

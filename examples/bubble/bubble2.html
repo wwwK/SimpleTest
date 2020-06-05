@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>攻击1</title>
+		<script src="../../js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../js/earthsdk/dist/XbsjEarth/XbsjEarth.js"></script>
+		<link rel="stylesheet" type="text/css" href="../../js/layui-v2.5.4/css/layui.css" />
+		<link rel="stylesheet/less" type="text/css" href="../../less/gg.less" />
+		<!-- 必须放样式下，官网顺序是错误的 -->
+		<script src="../../js/less.min.js" type="text/javascript" charset="utf-8"></script>
+
+	</head>
+	<body>
+		<div id="mapContainer"></div>
+		<div class="layui-card light-card">
+			<div class="layui-card-header">卡片面板</div>
+			<div class="layui-card-body">
+				卡片式面板面板通常用于非白色背景色的主体内<br>
+				从而映衬出边框投影
+			</div>
+		</div>
+	</body>
+
+	<script src="../../js/layui-v2.5.4/layui.js" type="text/javascript" charset="utf-8"></script>
+
+	<script type="text/javascript">
+		layui.use(['element'], function () {
+			var element = layui.element;
+			element.init();
+		});
+	</script>
+
+	<script type="module">
+
+		import BubbleFadeMaterialProperty from '../../extend/BubbleFadeMaterialProperty.js';
+		
+		var earth;
+		var outlineColor = "#4FA6DB";
+		var outlineWidth = 3;
+		var inlineColor = "#4FA6DB";
+		var inlineWith = 2;
+		let bubbleEntity,bubbleEntity2;
+
+		function addCircle () {
+			let material = new Cesium.BubbleFadeMaterialProperty(
+				// 最后一位透明度，是2时整体透明度计算会提高
+				// new Cesium.Color(1, 1, 0, 1),
+				new Cesium.Color(1, 1, 0, 0.8),
+				2000
+			);
+			
+			let material2 = new Cesium.BubbleFadeMaterialProperty(
+				// 最后一位透明度，是2时整体透明度计算会提高
+				// new Cesium.Color(1, 1, 0, 1),
+				new Cesium.Color(0.5, 0, 0, 0.8),
+				4000,
+				2000
+			);
+
+			let viewer = earth.czm.viewer;
+			var postion = Cesium.Cartesian3.fromDegrees(116.39, 39.9, 1000);
+			bubbleEntity = viewer.entities.add({
+				name: "气泡",
+				position: postion,
+				ellipse: {
+					height: 0,
+					semiMinorAxis: 3000.0,
+					semiMajorAxis: 3000.0,
+					material: material,
+					outline: true,
+					outlineColor: Cesium.Color.WHITE,
+					outlineWidth: 4
+				}
+			});
+			
+			bubbleEntity2 = viewer.entities.add({
+				name: "气泡2",
+				position: postion,
+				ellipse: {
+					height: 0,
+					semiMinorAxis: 6000.0,
+					semiMajorAxis: 6000.0,
+					material: material2
+				}
+			});
+		}
+
+		function startup () {
+			earth = new XE.Earth('mapContainer');
+
+			earth.sceneTree.root = {
+				"children": [{
+					"czmObject": {
+						"name": "谷歌影像",
+						"xbsjType": "Imagery",
+						"xbsjImageryProvider": {
+							"XbsjImageryProvider": {
+								"url": "//www.google.cn/maps/vt?lyrs=s,h&gl=CN&x={x}&y={y}&z={z}",
+								"srcCoordType": "GCJ02",
+								"dstCoordType": "WGS84",
+								"maximumLevel": 21,
+							},
+						}
+					}
+				}, ]
+			};
+
+			const viewer = earth.czm.viewer;
+			
+			console.log();
+			
+			BubbleFadeMaterialProperty();
+
+			setTimeout(() => {
+
+				addCircle();
+				// viewer.camera.lookAt(bubbleEntity)
+				viewer.flyTo(bubbleEntity);
+			}, 2000)
+		}
+
+		XE.ready().then(startup);
+	</script>
+
+	<!-- <script type="module">
+		// import * from '../../extend/BubbleFadeMaterialProperty';
+		// import * as BubbleFadeMaterialProperty from '../../extend/BubbleFadeMaterialProperty';
+		// console.log(Cesium)
+		import BubbleFadeMaterialProperty from '../../extend/BubbleFadeMaterialProperty.js';
+			console.log(BubbleFadeMaterialProperty);
+	</script> -->
+
+</html>
